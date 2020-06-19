@@ -17,7 +17,7 @@ class BaseTabbarController: UITabBarController, UITabBarControllerDelegate {
         self.delegate = self
         tabBar.isTranslucent = false
 
-        addChildVC(VC: HomeViewController(), title: "首页")
+        addChildVC(VC: PlayViewController(), title: "首页")
         addChildVC(VC: AttentViewController(), title: "关注")
         addChildVC(VC: MessageViewController(), title: "消息")
         addChildVC(VC: MineViewController(), title: "我")
@@ -25,8 +25,9 @@ class BaseTabbarController: UITabBarController, UITabBarControllerDelegate {
         let tabbar = BaseTabbar()
         self.setValue(tabbar, forKey: "tabBar")
         
-        self.tabBar.backgroundImage = UIColor.background.image()
-        self.tabBar.shadowImage = UIImage()
+        self.tabBar.backgroundImage = UIImage.gk_image(with: .clear, size: CGSize(width: ScreenW, height: TabbarH))
+//        self.tabBar.backgroundImage = UIColor.white.image()
+//        self.tabBar.shadowImage = UIImage()
     }
     
 

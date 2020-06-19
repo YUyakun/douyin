@@ -22,7 +22,7 @@ class VideoItemButton: UIButton {
         imageView?.frame = CGRect(x: (width - imaH) / 2, y: 0, width: imgW, height: imaH)
         let titleW = titleLabel?.frame.size.width ?? 0
         let titleH = titleLabel?.frame.size.height ?? 0
-        titleLabel?.frame = CGRect(x: (width - titleW) / 2, y: height - titleH, width: titleW, height: titleH)
+        titleLabel?.frame = CGRect(x: (width - titleW) / 2, y: height/2 - titleH, width: titleW, height: titleH)
 
     }
 

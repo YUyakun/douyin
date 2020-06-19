@@ -57,24 +57,27 @@ class PlayViewController: BaseViewController,JXSegmentedListContainerViewListDel
         } else {
             self.automaticallyAdjustsScrollViewInsets = false
         }
+        scrollView.mj_footer = MJRefreshAutoNormalFooter(refreshingBlock: {[weak self] in
+            self?.loadData()
+        })
         return scrollView
     }()
     //顶部视图
     lazy var topView: VideoControlView = {
         let topView = VideoControlView()
-        topView.isHidden = true
+        topView.isHidden = false
         return topView
     }()
     //中间视图
     lazy var ctrView: VideoControlView = {
         let ctrView = VideoControlView()
-        ctrView.isHidden = true
+        ctrView.isHidden = false
         return ctrView
     }()
     //底部视图
     lazy var btmView: VideoControlView = {
         let btmView = VideoControlView()
-        btmView.isHidden = true
+        btmView.isHidden = false
         return btmView
     }()
     lazy var backBtn: UIButton = {
@@ -137,7 +140,7 @@ class PlayViewController: BaseViewController,JXSegmentedListContainerViewListDel
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
         view.addSubview(scrollView)
         scrollView.frame = view.bounds
         let controlW = scrollView.frame.size.width
@@ -148,27 +151,29 @@ class PlayViewController: BaseViewController,JXSegmentedListContainerViewListDel
         ctrView.frame = CGRect(x: 0, y: controlH, width: controlW, height: controlH)
         btmView.frame = CGRect(x: 0, y: 2 * controlH, width: controlW, height: controlH)
 
-        if isPushed == false {
-            self.scrollView.mj_footer = MJRefreshAutoNormalFooter(refreshingBlock: {[weak self] in
-                if self?.isRefreshMore == true {return}
-                self?.isRefreshMore = true
-                self?.player.pausePlay()
-                //当播放索引为最后一个的时候才触发下拉刷新
-                self?.currentPlayIndex = self?.dataArray.count ?? 0 - 1
-                self?.viewModel.refreshMoreList(success: { (array) in
-                    self?.isRefreshMore = false
-                    if array.count > 0 {
-                        self?.setModel(models: array, index: 0)
-                    } else {
-                        self?.resetModels(models: array)
-                    }
-                    self?.scrollView.mj_footer?.endRefreshing();
-                    self?.scrollView.contentOffset = CGPoint(x: 0, y: 2 * ScreenH)
+        scrollView.mj_footer?.beginRefreshing()
 
-                }, failure: { (error) in
-                    self?.isRefreshMore = false
-                    self?.scrollView.mj_footer?.endRefreshing()
-                })
+    }
+
+    func loadData() -> Void {
+        if isPushed == false {
+            self.isRefreshMore = true
+            self.player.pausePlay()
+            //当播放索引为最后一个的时候才触发下拉刷新
+            self.currentPlayIndex = self.dataArray.count - 1
+            self.viewModel.refreshMoreList(success: { (array) in
+                self.isRefreshMore = false
+                if array.count > 0 {
+                    self.setModel(models: array, index: 0)
+                } else {
+                    self.resetModels(models: array)
+                }
+                self.scrollView.mj_footer?.endRefreshing();
+                self.scrollView.contentOffset = CGPoint(x: 0, y: 2 * ScreenH)
+
+            }, failure: { (error) in
+                self.isRefreshMore = false
+                self.scrollView.mj_footer?.endRefreshing()
             })
             self.scrollView.addGestureRecognizer(self.panGesture)
         } else {
@@ -179,10 +184,7 @@ class PlayViewController: BaseViewController,JXSegmentedListContainerViewListDel
                 make.width.height.equalTo(44)
             }
         }
-
-
     }
-
     lazy var viewModel: VideoViewModel = {
         let viewModel = VideoViewModel()
         return viewModel
@@ -277,6 +279,7 @@ class PlayViewController: BaseViewController,JXSegmentedListContainerViewListDel
         //切换播放视图
         currentPlayId = fromView.model?.post_id
         currentPlayView = fromView
+        currentPlayView.frame = fromView.frame
         currentPlayIndex = indexOfModel(model: fromView.model)
         //设置新视图的代理
         currentPlayView.delegate = self
@@ -460,7 +463,25 @@ extension PlayViewController: VideoPlayerDelegate,UIScrollViewDelegate,UIGesture
         }
     }
     func playerStatusChange(status: VideoPlayerStatus) {
-
+        switch status {
+        case .unload:
+            break
+        case .prepared:
+            currentPlayView.startLoading()
+        case .loading:
+            currentPlayView.hidePlayBtn()
+        case .playing:
+            currentPlayView.startLoading()
+            currentPlayView.showPlayBtn()
+        case .ended:
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                self.player.resetPlay()
+            }
+        case .error:
+            break
+        default:
+            break
+        }
     }
 
     func playertimeChange(currentTime: CGFloat, totalTime: CGFloat, progress: CGFloat) {

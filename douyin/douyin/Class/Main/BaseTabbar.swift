@@ -19,6 +19,7 @@ class BaseTabbar: UITabBar {
         super.init(frame: frame)
         addSubview(publishBtn)
         
+        self.backgroundImage = UIImage.gk_image(with: .clear, size: CGSize(width: ScreenW, height: TabbarH))
     }
 
     required init?(coder: NSCoder) {

@@ -28,13 +28,14 @@ class HomeViewController: BaseViewController {
     }()
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        gk_navBarAlpha = 0
         self.navigationController?.setNavigationBarHidden(true, animated: false)
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "nav_search"), style: .plain, target: self, action: #selector(searchClick))
         // Do any additional setup after loading the view.
 
 
         self.view.addSubview(navView)
+        navView.backgroundColor = .clear
         navView.snp.makeConstraints { (make) in
             make.left.top.right.equalToSuperview()
             make.height.equalTo(NaviBarH)
